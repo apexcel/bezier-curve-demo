@@ -1,4 +1,4 @@
-import { drawDot } from "../draw.js";
+import { drawDot, drawEdge } from "../draw.js";
 import { createElement, getMousePosition } from "../utils.js";
 
 const WIDTH = 640, HEIGHT = 640;
@@ -33,38 +33,32 @@ class Board {
     }
 
     markCurrentPosition = (ev) => {
-        this.dots.push(getMousePosition(this.canvas, ev));
+        const coordinates = getMousePosition(this.canvas, ev);
+        this.probeDotList(coordinates.x, coordinates.y);
+        console.log(this.selected)
+        if (this.selected >= 0) {
+            this.dots = this.dots.filter((_, i) => i !== this.selected);
+            this.selected = -1;
+        }
+        else {
+            this.dots.push(coordinates);
+        }
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.dots.forEach(dot => {
+        let prevX, prevY;
+        this.dots.forEach((dot, i) => {
             drawDot(this.ctx, dot.x, dot.y)
+            if (i > 0) {
+                drawEdge(this.ctx, prevX, dot.x, prevY, dot.y);
+            }
+            prevX = dot.x;
+            prevY = dot.y
         })
     }
 
     onMouseDown = (ev) => {
         ev.preventDefault();
         const { x, y } = getMousePosition(this.canvas, ev);
-        const isPossible = dot => {
-            const xpb = dot.x + 10;
-            const xnb = dot.x - 10;
-            const ypb = dot.y + 10;
-            const ynb = dot.y - 10;
-            if (dot.x >= 0 && dot.y >= 0 && dot.x <= WIDTH && dot.y <= HEIGHT
-                && (x <= xpb && x >= xnb && y >= ynb && y <= ypb)) {
-                return true;
-            }
-            return false;
-        }
-
-        for (let i = 0; i < this.dots.length; i += 1) {
-            const currentDot = this.dots[i];
-            if (isPossible(currentDot)) {
-                this.selected = i;
-                break;
-            }
-        }
-
-
-        console.log(this.selected)
+        this.probeDotList(x, y);
     }
 
     onMouseMove = (ev) => {
@@ -73,16 +67,45 @@ class Board {
         this.dots[this.selected].x = ev.offsetX;
         this.dots[this.selected].y = ev.offsetY;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.dots.forEach(dot => {
+
+        let prevX, prevY;
+        this.dots.forEach((dot, i) => {
             drawDot(this.ctx, dot.x, dot.y)
+            if (i > 0) {
+                drawEdge(this.ctx, prevX, dot.x, prevY, dot.y);
+            }
+            prevX = dot.x;
+            prevY = dot.y
         })
     }
 
-    onMouseUp = (ev) => {
+    onMouseOut = (ev) => {
         this.selected = -1;
     }
     onMouseUp = (ev) => {
         this.selected = -1;
+    }
+
+    isExist = (dot, x, y) => {
+        const xpb = dot.x + 10;
+        const xnb = dot.x - 10;
+        const ypb = dot.y + 10;
+        const ynb = dot.y - 10;
+        if (dot.x >= 0 && dot.y >= 0 && dot.x <= WIDTH && dot.y <= HEIGHT
+            && (x <= xpb && x >= xnb && y >= ynb && y <= ypb)) {
+            return true;
+        }
+        return false;
+    }
+
+    probeDotList = (x, y) => {
+        for (let i = 0; i < this.dots.length; i += 1) {
+            const currentDot = this.dots[i];
+            if (this.isExist(currentDot, x, y)) {
+                this.selected = i;
+                return;
+            }
+        }
     }
 }
 
