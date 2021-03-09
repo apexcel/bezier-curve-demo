@@ -35,6 +35,7 @@ const getMousePosition = (canvas, ev) => {
 };
 
 //TODO: 원리 이해하기
+// Linear Interpolation
 const blend = (p1, p2, t) => {
     if (t > 1 || t < 0) return 0;
     if (t === 0) return p1;
@@ -67,4 +68,4 @@ const interpolation = (x1, x2, y1, y2, duration) => {
         requestAnimationFrame(step);
     }
 };
-export { createElement, attachStyleSheet, getMousePosition, interpolation };
+export { createElement, attachStyleSheet, getMousePosition, blend };

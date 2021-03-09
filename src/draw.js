@@ -6,14 +6,17 @@ const drawGrid = (ctx) => {
     ctx.lineWidth = 1;
 
     for (let y = 0; y < height; y += padding) {
+        ctx.beginPath();
         ctx.moveTo(0, y + padding);
         ctx.lineTo(width + padding, y + padding);
+        ctx.stroke();
     }
     for (let x = 0; x < height; x += padding) {
+        ctx.beginPath();
         ctx.moveTo(x + padding, 0);
         ctx.lineTo(x + padding, height + padding);
+        ctx.stroke();
     }
-    ctx.stroke();
     ctx.restore();
 }
 
@@ -21,13 +24,13 @@ const drawDot = (ctx, x, y, options) => {
     const { color1, color2 } = options || {};
     ctx.save();
     ctx.beginPath();
-    ctx.fillStyle = color1 ? color1 : 'gray';
-    ctx.arc(x, y, 15, 0, 360)
+    ctx.fillStyle = color1 ? color1 : '#525252';
+    ctx.arc(x, y, 12, 0, 360)
     ctx.fill();
     ctx.closePath();
     ctx.beginPath();
-    ctx.fillStyle = color2 ? color2 : 'black';
-    ctx.arc(x, y, 10, 0, 360)
+    ctx.fillStyle = color2 ? color2 : '#000000';
+    ctx.arc(x, y, 8, 0, 360)
     ctx.fill();
     ctx.closePath();
     ctx.restore();
@@ -62,7 +65,7 @@ const drawDashedEdge = (ctx, x1, x2, y1, y2, options) => {
 
 const drawDotsAndEdges = (ctx, dots) => {
     let prevX, prevY;
-    clear(ctx, window.innerWidth, window.innerHeight);
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     drawGrid(ctx);
     dots.forEach((dot, i) => {
         drawDot(ctx, dot.x, dot.y);
@@ -76,13 +79,11 @@ const drawWillMovingDotsAndEdges = (ctx, dots) => {
     let prevX, prevY;
     // clear(ctx, window.innerWidth, window.innerHeight);
     dots.forEach((dot, i) => {
-        drawDot(ctx, dot.xFrom, dot.yFrom, { color2: '#2c9e70' });
-        if (i > 0) drawDashedEdge(ctx, prevX, dot.xFrom, prevY, dot.yFrom, { strokeStyle: '#9e3f2c', dashedStyle: [10, 24] });
+        drawDot(ctx, dot.x, dot.y, { color2: '#119e38' });
+        if (i > 0) drawDashedEdge(ctx, prevX, dot.x, prevY, dot.y, { strokeStyle: '#9e3f2c', dashedStyle: [10, 24] });
         prevX = dot.xFrom;
         prevY = dot.yFrom;
     })
 }
 
-const clear = (ctx, w, h) => ctx.clearRect(0, 0, w, h);
-
-export { drawDot, drawEdge, drawDotsAndEdges, drawWillMovingDotsAndEdges, drawGrid }
+export { drawDot, drawDotsAndEdges, drawWillMovingDotsAndEdges, drawGrid }

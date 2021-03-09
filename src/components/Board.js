@@ -1,5 +1,5 @@
-import { drawGrid, drawDotsAndEdges, drawWillMovingDotsAndEdges } from "../draw.js";
-import { createElement, getMousePosition, interpolation } from "../utils.js";
+import { drawGrid, drawDotsAndEdges, drawWillMovingDotsAndEdges, drawDot } from "../draw.js";
+import { createElement, getMousePosition, blend } from "../utils.js";
 
 const WIDTH = 640, HEIGHT = 640;
 
@@ -8,9 +8,9 @@ class Board {
         this.canvas = createElement('canvas', {
             id: 'canvas'
         });
+        parent.appendChild(this.canvas);
         this.ctx = this.canvas.getContext('2d');
         this.init();
-        parent.appendChild(this.canvas);
     }
 
     init = () => {
@@ -25,7 +25,7 @@ class Board {
         this.canvas.addEventListener('mousemove', this.onMouseMove);
         this.canvas.addEventListener('mouseout', this.onMouseOut);
         this.canvas.addEventListener('mouseup', this.onMouseUp);
-        drawGrid(this.ctx);
+        drawGrid(this.ctx, this.dots);
     }
 
     markCurrentPosition = (ev) => {
@@ -63,11 +63,13 @@ class Board {
     }
 
     isExist = (dot, x, y) => {
-        const xpb = dot.x + 10;
-        const xnb = dot.x - 10;
-        const ypb = dot.y + 10;
-        const ynb = dot.y - 10;
-        if (dot.x >= 0 && dot.y >= 0 && dot.x <= WIDTH && dot.y <= HEIGHT
+        const radius = 10;
+        const xpb = dot.x + radius;
+        const xnb = dot.x - radius;
+        const ypb = dot.y + radius;
+        const ynb = dot.y - radius;
+        if (dot.x >= -1 && dot.y >= -1 
+            && dot.x <= WIDTH && dot.y <= HEIGHT
             && (x <= xpb && x >= xnb && y >= ynb && y <= ypb)) {
             return true;
         }
@@ -84,11 +86,14 @@ class Board {
         }
     }
 
+    // TODO: interloatiom에 따른 draw 구현
     runAnimate = () => {
         console.log('run animate')
-        console.log(this.vectors);
         this.frame = 0;
-        requestAnimationFrame(this.animate);
+        const bx = blend.bind(null, this.dots[0].x, this.dots[1].x);
+        const by = blend.bind(null, this.dots[0].y, this.dots[1].y)
+        drawDot(this.ctx, bx(0.1), by(0.1));
+        // requestAnimationFrame(this.animate);
     }
 
     stopAnimate = () => {
@@ -96,20 +101,10 @@ class Board {
     }
 
     animate = () => {
-        if (this.frame < 200) {
+        if (this.frame < 100) {
             this.frame += 1;
             drawWillMovingDotsAndEdges(this.ctx, this.dots);
             this.raf = requestAnimationFrame(this.animate);
-            console.log('asdasd')
-            for (let i = 1; i < this.dots.length; i += 1) {
-                const prev = this.dots[i -1];
-                const curr = this.dots[i];
-                const interpolate = interpolation(prev.x, curr.x, prev.y, curr.y, 1000);
-                interpolate((x, y) => {
-                    this.dots[i].x = x;
-                    this.dots[i].y = y;
-                })
-            }
         }
     }
 }
