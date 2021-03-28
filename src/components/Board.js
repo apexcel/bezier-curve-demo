@@ -97,35 +97,68 @@ class Board {
 
     testRun = () => {
         this.startTime = Date.now();
+        this.testDots = this.dots.slice(0);
         this.testAnimate();
     }
+
     testAnimate = () => {
         const currentTime = Date.now();
         this.testRaf = requestAnimationFrame(this.testAnimate)
+        this.rCalcDots((currentTime - this.startTime) / 1000);
         if (currentTime - this.startTime > 1000) {
+            console.log('stop test run')
+            this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            drawGrid(this.ctx);
+            drawDotsAndEdges(this.ctx, this.dots);
             cancelAnimationFrame(this.testRaf);
         }
-        this.rCalcDots(this.dots, (currentTime - this.startTime) / 1000);
     }
 
-    rCalcDots = (arr, t) => {
-        if (arr.length <= 1) return arr;
+    rCalcDots = (t) => {
+        const innerCalcDots = (dots, t) => {
+            if (dots.length < 2) return;
+            const innerEdges = [];
+            for (let i = 1; i < dots.length; i += 1) {
+                const movingDot = blend(dots[i - 1].x, dots[i].x, dots[i - 1].y, dots[i].y, t)
+                innerEdges.push({
+                    x: movingDot.x,
+                    y: movingDot.y,
+                });
+                drawMovings(this.ctx, innerEdges);
+            }
+            innerCalcDots(innerEdges, t)
+        };
+
         const ret = [];
-        for (let i = 1; i < arr.length; i += 1) {
-            const movingDot = blend(arr[i - 1].x, arr[i].x, arr[i - 1].y, arr[i].y, t)
+        for (let i = 1; i < this.testDots.length; i += 1) {
+            const movingDot = blend(this.testDots[i - 1].x, this.testDots[i].x, this.testDots[i - 1].y, this.testDots[i].y, t)
             ret.push({
                 x: movingDot.x,
                 y: movingDot.y,
             });
-        }
 
-        this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-        drawGrid(this.ctx);
-        drawMovings(this.ctx, this.dots);
-        drawMovings(this.ctx, ret);
-        console.log(ret)
-        this.rCalcDots(ret, t);
+            this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            drawGrid(this.ctx);
+            drawMovings(this.ctx, this.dots);
+            drawMovings(this.ctx, ret);
+        }
+        innerCalcDots(ret, t);
     }
+
+    calcEdges = (dots, t) => {
+        if (dots.length < 2) return;
+        const edges = [];
+        for (let i = 1; i < dots.length; i += 1) {
+            const dotForEdge = blend(dots[i - 1].x, dots[i].x, dots[i - 1].y, dots[i].y, t)
+            edges.push({
+                x: dotForEdge.x,
+                y: dotForEdge.y,
+            });
+        }
+        console.log(edges)
+        drawMovings(this.ctx, edges);
+        this.calcEdges(edges);
+    };
 
     calcBezier = (t, arr) => {
         for (let i = 1; i < arr.length; i += 1) {
