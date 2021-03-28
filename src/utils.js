@@ -37,9 +37,8 @@ const getMousePosition = (canvas, ev) => {
 //TODO: 원리 이해하기
 // Linear Interpolation
 const blender = (p1, p2, t) => {
-    if (t > 1 || t < 0) return 0;
-    if (t === 0) return p1;
-    if (t === 1) return p2;
+    if (t <= 0) return p1;
+    if (t >= 1) return p2;
     return ((1 - t) * p1) + (t * p2);
 };
 

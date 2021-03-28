@@ -1,4 +1,4 @@
-import { drawGrid, drawDotsAndEdges, drawWillMovingDotsAndEdges, drawDot } from "../draw.js";
+import { drawGrid, drawDotsAndEdges, drawEdge, drawDot, drawMovings } from "../draw.js";
 import { createElement, getMousePosition, blend, interpolate } from "../utils.js";
 
 const WIDTH = 640, HEIGHT = 640;
@@ -95,25 +95,61 @@ class Board {
 
     // TODO: interloation에 따른 draw 구현
 
-    calcBezier = (t) => {
-        const totalDepth = this.movingDots.length;
-        for (let i = 1; i < totalDepth; i += 1) {
-            const prev = this.movingDots[i - 1];
-            const curr = this.movingDots[i];
-            const blended = blend(prev.x, curr.x, prev.y, curr.y, t);
-            this.movingDots[i - 1] = {
-                x: blended.x,
-                y: blended.y
+    testRun = () => {
+        this.startTime = Date.now();
+        this.testAnimate();
+    }
+    testAnimate = () => {
+        const currentTime = Date.now();
+        this.testRaf = requestAnimationFrame(this.testAnimate)
+        if (currentTime - this.startTime > 1000) {
+            cancelAnimationFrame(this.testRaf);
+        }
+        this.rCalcDots(this.dots, (currentTime - this.startTime) / 1000);
+    }
+
+    rCalcDots = (arr, t) => {
+        if (arr.length <= 1) return arr;
+        const ret = [];
+        for (let i = 1; i < arr.length; i += 1) {
+            const movingDot = blend(arr[i - 1].x, arr[i].x, arr[i - 1].y, arr[i].y, t)
+            ret.push({
+                x: movingDot.x,
+                y: movingDot.y,
+            });
+        }
+
+        this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        drawGrid(this.ctx);
+        drawMovings(this.ctx, this.dots);
+        drawMovings(this.ctx, ret);
+        console.log(ret)
+        this.rCalcDots(ret, t);
+    }
+
+    calcBezier = (t, arr) => {
+        for (let i = 1; i < arr.length; i += 1) {
+            const dotForEdge = blend(this.dots[i - 1].x, this.dots[i].x, this.dots[i - 1].y, this.dots[i].y, t)
+            this.dotsForEdges[i - 1] = {
+                x: dotForEdge.x,
+                y: dotForEdge.y,
             };
-            // drawDotsAndEdges(this.ctx, this.dots);
-        console.log(this.movingDots)
-            drawDot(this.ctx, this.movingDots[i-1].x, this.movingDots[i-1].y)
+        }
+
+        for (let i = 1; i < this.dotsForEdges.length; i += 1) {
+            const prev = this.dotsForEdges[i - 1];
+            const curr = this.dotsForEdges[i];
+            this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            drawGrid(this.ctx);
+            drawMovings(this.ctx, this.dots);
+            drawMovings(this.ctx, this.dotsForEdges);
         }
     }
 
     runAnimate = () => {
-        console.log(this.dots)
+        this.dotsForEdges = [];
         this.movingDots = this.dots.slice(0);
+        this.arr = this.dots.slice(0);
         // this.calculated = [];
         // for (let i = 1; i < this.dots.length; i += 1) {
         //     const prev = this.dots[i - 1];
@@ -137,12 +173,12 @@ class Board {
 
     animate = () => {
         const currentTime = Date.now();
-        console.log(currentTime - this.startTime, this.raf)
+        // console.log(currentTime - this.startTime, (currentTime - this.startTime) / 1000, this.raf)
         this.raf = requestAnimationFrame(this.animate)
-        this.calcBezier((currentTime - this.startTime) / 1000);
         if (currentTime - this.startTime > 1000) {
             this.stopAnimate();
         }
+        this.calcBezier((currentTime - this.startTime) / 1000, this.arr);
     }
 }
 

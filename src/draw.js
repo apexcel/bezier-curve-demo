@@ -1,5 +1,5 @@
 const drawGrid = (ctx) => {
-    const {width, height} = ctx.canvas;
+    const { width, height } = ctx.canvas;
     const padding = 30;
     ctx.save();
     ctx.strokeStyle = 'black';
@@ -75,15 +75,14 @@ const drawDotsAndEdges = (ctx, dots) => {
     })
 }
 
-const drawWillMovingDotsAndEdges = (ctx, dots) => {
+const drawMovings = (ctx, dots) => {
     let prevX, prevY;
-    // clear(ctx, window.innerWidth, window.innerHeight);
     dots.forEach((dot, i) => {
-        drawDot(ctx, dot.x, dot.y, { color2: '#119e38' });
-        if (i > 0) drawDashedEdge(ctx, prevX, dot.x, prevY, dot.y, { strokeStyle: '#9e3f2c', dashedStyle: [10, 24] });
-        prevX = dot.xFrom;
-        prevY = dot.yFrom;
+        drawDot(ctx, dot.x, dot.y);
+        if (i > 0) drawEdge(ctx, prevX, dot.x, prevY, dot.y);
+        prevX = dot.x;
+        prevY = dot.y;
     })
 }
 
-export { drawDot, drawDotsAndEdges, drawWillMovingDotsAndEdges, drawGrid }
+export { drawDot, drawEdge, drawDotsAndEdges, drawMovings, drawGrid }

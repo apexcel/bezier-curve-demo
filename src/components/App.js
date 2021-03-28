@@ -19,11 +19,17 @@ export default  class App {
             id: 'rest',
             innerText: 'RESET'
         });
+        const test = createElement('button', {
+            id: 'test',
+            innerText: 'TEST'
+        });
         run.onclick = () => board.runAnimate();
         stop.onclick = () => board.stopAnimate();
         reset.onclick = () => board.resetGrid();
+        test.onclick = () => board.testRun();
         this.$root.appendChild(run);
         this.$root.appendChild(stop);
         this.$root.appendChild(reset);
+        this.$root.appendChild(test);
     }
 }
