@@ -11,7 +11,7 @@ const drawGrid = (ctx) => {
         ctx.lineTo(width + padding, y + padding);
         ctx.stroke();
     }
-    for (let x = 0; x < height; x += padding) {
+    for (let x = 0; x < width; x += padding) {
         ctx.beginPath();
         ctx.moveTo(x + padding, 0);
         ctx.lineTo(x + padding, height + padding);
@@ -24,7 +24,7 @@ const drawDot = (ctx, x, y, options) => {
     const { color1, color2 } = options || {};
     ctx.save();
     ctx.beginPath();
-    ctx.fillStyle = color1 ? color1 : '#525252a2';
+    ctx.fillStyle = color1 ? color1 : '#5895e68c';
     ctx.arc(x, y, 12, 0, 360)
     ctx.fill();
     ctx.closePath();
@@ -39,7 +39,7 @@ const drawDot = (ctx, x, y, options) => {
 const drawEdge = (ctx, x1, x2, y1, y2, options) => {
     const { strokeStyle } = options || {};
     ctx.strokeStyle = strokeStyle ? strokeStyle : 'black';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 1.5;
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(x1, y1);

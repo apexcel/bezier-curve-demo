@@ -1,7 +1,9 @@
-import { drawGrid, drawDotsAndEdges, drawEdge, drawDot, drawMovings } from "../draw.js";
-import { createElement, getMousePosition, blend, interpolate } from "../utils.js";
+import { drawGrid, drawDotsAndEdges, drawMovings } from "../draw.js";
+import { createElement, getMousePosition, blend } from "../utils.js";
 
-const WIDTH = 640, HEIGHT = 640;
+const WIDTH = document.documentElement.clientWidth,
+    HEIGHT = document.documentElement.clientHeight;
+let MOVE_TIME = 1500;
 
 class Board {
     constructor(parent) {
@@ -14,8 +16,8 @@ class Board {
     }
 
     init = () => {
-        this.canvas.style.width = '640px';
-        this.canvas.style.height = '640px';
+        this.canvas.style.width = WIDTH;
+        this.canvas.style.height = HEIGHT;
         this.canvas.width = WIDTH;
         this.canvas.height = HEIGHT;
         this.dots = [];
@@ -25,12 +27,13 @@ class Board {
         this.canvas.addEventListener('mousemove', this.onMouseMove);
         this.canvas.addEventListener('mouseout', this.onMouseOut);
         this.canvas.addEventListener('mouseup', this.onMouseUp);
-        drawGrid(this.ctx, this.dots);
+        this.resetGrid();
     }
 
     resetGrid = () => {
         this.dots = [];
-        this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
+        this.stopAnimate();
         drawGrid(this.ctx, this.dots);
     }
 
@@ -53,6 +56,7 @@ class Board {
         this.probeDotList(x, y);
     }
 
+    // TODO: 정지된 상태에서 각 정점을 움직일 때 bezier 곡선들도 같이 움직이게 하기
     onMouseMove = (ev) => {
         ev.preventDefault();
         if (this.selected < 0) return;
@@ -67,6 +71,10 @@ class Board {
 
     onMouseUp = (ev) => {
         this.selected = -1;
+    }
+
+    onChangeTime = (ev) => {
+        MOVE_TIME = parseInt(ev.target.value, 10);
     }
 
     isExist = (dot, x, y) => {
@@ -93,28 +101,27 @@ class Board {
         }
     }
 
-    // TODO: interloation에 따른 draw 구현
-
-    testRun = () => {
+    runAnimate = () => {
         this.startTime = Date.now();
-        this.testDots = this.dots.slice(0);
-        this.testAnimate();
+        this.isPlay = true;
+        this.animate();
     }
 
-    testAnimate = () => {
+    animate = () => {
         const currentTime = Date.now();
-        this.testRaf = requestAnimationFrame(this.testAnimate)
-        this.rCalcDots((currentTime - this.startTime) / 1000);
-        if (currentTime - this.startTime > 1000) {
-            console.log('stop test run')
+        this.raf = requestAnimationFrame(this.animate)
+
+        this.calculateBezier((currentTime - this.startTime) / MOVE_TIME);
+        if (currentTime - this.startTime > MOVE_TIME) {
             this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
             drawGrid(this.ctx);
             drawDotsAndEdges(this.ctx, this.dots);
-            cancelAnimationFrame(this.testRaf);
+            cancelAnimationFrame(this.raf);
         }
     }
 
-    rCalcDots = (t) => {
+    calculateBezier = (t) => {
+
         const innerCalcDots = (dots, t) => {
             if (dots.length < 2) return;
             const innerEdges = [];
@@ -130,8 +137,8 @@ class Board {
         };
 
         const ret = [];
-        for (let i = 1; i < this.testDots.length; i += 1) {
-            const movingDot = blend(this.testDots[i - 1].x, this.testDots[i].x, this.testDots[i - 1].y, this.testDots[i].y, t)
+        for (let i = 1; i < this.dots.length; i += 1) {
+            const movingDot = blend(this.dots[i - 1].x, this.dots[i].x, this.dots[i - 1].y, this.dots[i].y, t)
             ret.push({
                 x: movingDot.x,
                 y: movingDot.y,
@@ -145,73 +152,15 @@ class Board {
         innerCalcDots(ret, t);
     }
 
-    calcEdges = (dots, t) => {
-        if (dots.length < 2) return;
-        const edges = [];
-        for (let i = 1; i < dots.length; i += 1) {
-            const dotForEdge = blend(dots[i - 1].x, dots[i].x, dots[i - 1].y, dots[i].y, t)
-            edges.push({
-                x: dotForEdge.x,
-                y: dotForEdge.y,
-            });
-        }
-        console.log(edges)
-        drawMovings(this.ctx, edges);
-        this.calcEdges(edges);
-    };
-
-    calcBezier = (t, arr) => {
-        for (let i = 1; i < arr.length; i += 1) {
-            const dotForEdge = blend(this.dots[i - 1].x, this.dots[i].x, this.dots[i - 1].y, this.dots[i].y, t)
-            this.dotsForEdges[i - 1] = {
-                x: dotForEdge.x,
-                y: dotForEdge.y,
-            };
-        }
-
-        for (let i = 1; i < this.dotsForEdges.length; i += 1) {
-            const prev = this.dotsForEdges[i - 1];
-            const curr = this.dotsForEdges[i];
-            this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-            drawGrid(this.ctx);
-            drawMovings(this.ctx, this.dots);
-            drawMovings(this.ctx, this.dotsForEdges);
-        }
-    }
-
-    runAnimate = () => {
-        this.dotsForEdges = [];
-        this.movingDots = this.dots.slice(0);
-        this.arr = this.dots.slice(0);
-        // this.calculated = [];
-        // for (let i = 1; i < this.dots.length; i += 1) {
-        //     const prev = this.dots[i - 1];
-        //     const curr = this.dots[i];
-        //     const interpolation = interpolate(prev.x, curr.x, prev.y, curr.y, 1000);
-        //     // interpolation((x, y) => {
-        //     //     drawDotsAndEdges(this.ctx, this.dots);
-        //     //     drawDot(this.ctx, x, y)
-        //     //     console.log(x, y)
-        //     // })
-        // }
-        // console.log(this.calculated)
-        this.startTime = Date.now();
-        this.animate();
-    }
-
     stopAnimate = () => {
         console.log('stop executed')
-        cancelAnimationFrame(this.raf);
-    }
-
-    animate = () => {
-        const currentTime = Date.now();
-        // console.log(currentTime - this.startTime, (currentTime - this.startTime) / 1000, this.raf)
-        this.raf = requestAnimationFrame(this.animate)
-        if (currentTime - this.startTime > 1000) {
-            this.stopAnimate();
+        if (this.isPlay) {
+            cancelAnimationFrame(this.raf);
+            this.isPlay = true;
         }
-        this.calcBezier((currentTime - this.startTime) / 1000, this.arr);
+        if (!this.isPlay) {
+            requestAnimationFrame(this.animate)
+        }
     }
 }
 

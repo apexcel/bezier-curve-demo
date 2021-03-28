@@ -4,9 +4,16 @@ import Board from './Board.js';
 
 export default  class App {
     constructor() {
-        this.$root = document.getElementById('root');
-        styleSheets.forEach(style => attachStyleSheet(style));
-        const board = new Board(this.$root);
+        this.root = document.getElementById('root');
+        // styleSheets.forEach(style => attachStyleSheet(style));
+
+        const board = new Board(this.root);
+
+        const controller = createElement('div', {
+            width: '100px',
+            height: '100px',
+            className: 'controller'
+        })
         const run = createElement('button', {
             id: 'run',
             innerText: 'RUN'
@@ -19,17 +26,21 @@ export default  class App {
             id: 'rest',
             innerText: 'RESET'
         });
-        const test = createElement('button', {
-            id: 'test',
-            innerText: 'TEST'
-        });
+        const adjustTime = createElement('input', {
+            type: 'range',
+            min: 1000,
+            max: 10000,
+        })
+
         run.onclick = () => board.runAnimate();
         stop.onclick = () => board.stopAnimate();
         reset.onclick = () => board.resetGrid();
-        test.onclick = () => board.testRun();
-        this.$root.appendChild(run);
-        this.$root.appendChild(stop);
-        this.$root.appendChild(reset);
-        this.$root.appendChild(test);
+        adjustTime.onchange = (e) => board.onChangeTime(e);
+
+        controller.appendChild(run);
+        controller.appendChild(stop);
+        controller.appendChild(reset);
+        controller.appendChild(adjustTime);
+        this.root.appendChild(controller);
     }
 }
