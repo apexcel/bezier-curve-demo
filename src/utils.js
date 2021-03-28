@@ -36,18 +36,24 @@ const getMousePosition = (canvas, ev) => {
 
 //TODO: 원리 이해하기
 // Linear Interpolation
-const blend = (p1, p2, t) => {
+const blender = (p1, p2, t) => {
     if (t > 1 || t < 0) return 0;
     if (t === 0) return p1;
     if (t === 1) return p2;
     return ((1 - t) * p1) + (t * p2);
 };
 
+const blend = (x1, x2, y1, y2, t) => {
+    const x = blender(x1, x2, t);
+    const y = blender(y1, y2, t);
+    return { x, y };
+};
+
 // TODO: 동작 방식 확인 하기
-const interpolation = (x1, x2, y1, y2, duration) => {
+const interpolate = (x1, x2, y1, y2, duration) => {
     return (update) => {
-        const blendX = blend.bind(null, x1, x2);
-        const blendY = blend.bind(null, y1, y2);
+        const blendX = blender.bind(null, x1, x2);
+        const blendY = blender.bind(null, y1, y2);
         let startTime = 0;
 
         const step = (timestamp) => {
@@ -61,11 +67,10 @@ const interpolation = (x1, x2, y1, y2, duration) => {
                 update(blendX(1), blendY(1));
                 return;
             }
-
             update(blendX(progress), blendY(progress));
             requestAnimationFrame(step);
         }
         requestAnimationFrame(step);
     }
 };
-export { createElement, attachStyleSheet, getMousePosition, blend };
+export { createElement, attachStyleSheet, getMousePosition, blender, blend, interpolate };

@@ -24,13 +24,13 @@ const drawDot = (ctx, x, y, options) => {
     const { color1, color2 } = options || {};
     ctx.save();
     ctx.beginPath();
-    ctx.fillStyle = color1 ? color1 : '#525252';
+    ctx.fillStyle = color1 ? color1 : '#525252a2';
     ctx.arc(x, y, 12, 0, 360)
     ctx.fill();
     ctx.closePath();
     ctx.beginPath();
     ctx.fillStyle = color2 ? color2 : '#000000';
-    ctx.arc(x, y, 8, 0, 360)
+    ctx.arc(x, y, 3, 0, 360)
     ctx.fill();
     ctx.closePath();
     ctx.restore();

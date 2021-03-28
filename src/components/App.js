@@ -15,9 +15,15 @@ export default  class App {
             id: 'stop',
             innerText: 'STOP'
         });
+        const reset = createElement('button', {
+            id: 'rest',
+            innerText: 'RESET'
+        });
         run.onclick = () => board.runAnimate();
         stop.onclick = () => board.stopAnimate();
+        reset.onclick = () => board.resetGrid();
         this.$root.appendChild(run);
         this.$root.appendChild(stop);
+        this.$root.appendChild(reset);
     }
 }
