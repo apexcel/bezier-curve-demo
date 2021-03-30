@@ -20,7 +20,7 @@ class Board {
         this.canvas.style.height = HEIGHT;
         this.canvas.width = WIDTH;
         this.canvas.height = HEIGHT;
-        this.dots = [];
+        this.dots = []; // 만든 점들의 좌표가 저장되는 배열
         this.selected = -1;
         this.canvas.addEventListener('dblclick', this.markCurrentPosition);
         this.canvas.addEventListener('mousedown', this.onMouseDown);
@@ -47,7 +47,8 @@ class Board {
         else {
             this.dots.push(coordinates);
         }
-        drawDotsAndEdges(this.ctx, this.dots);
+        this.calculateBezier(this.time / MOVE_TIME)
+        // drawDotsAndEdges(this.ctx, this.dots);
     }
 
     onMouseDown = (ev) => {
@@ -59,10 +60,13 @@ class Board {
     // TODO: 정지된 상태에서 각 정점을 움직일 때 bezier 곡선들도 같이 움직이게 하기
     onMouseMove = (ev) => {
         ev.preventDefault();
+        // 선택된 정점이 없을 경우 리턴
         if (this.selected < 0) return;
+
         this.dots[this.selected].x = ev.offsetX;
         this.dots[this.selected].y = ev.offsetY;
-        drawDotsAndEdges(this.ctx, this.dots);
+        // drawDotsAndEdges(this.ctx, this.dots);
+        this.calculateBezier(this.time / MOVE_TIME)
     }
 
     onMouseOut = (ev) => {
@@ -105,6 +109,7 @@ class Board {
         this.startTime = Date.now();
         this.isPlay = true;
         this.animate();
+        console.log(this.calculatedDots)
     }
 
     animate = () => {
@@ -121,46 +126,49 @@ class Board {
     }
 
     calculateBezier = (t) => {
-
+        this.calculatedDots = [];
+        
         const innerCalcDots = (dots, t) => {
             if (dots.length < 2) return;
-            const innerEdges = [];
+            const rCalcedDots = [];
             for (let i = 1; i < dots.length; i += 1) {
                 const movingDot = blend(dots[i - 1].x, dots[i].x, dots[i - 1].y, dots[i].y, t)
-                innerEdges.push({
+                rCalcedDots.push({
                     x: movingDot.x,
                     y: movingDot.y,
                 });
-                drawMovings(this.ctx, innerEdges);
+                drawMovings(this.ctx, rCalcedDots);
             }
-            innerCalcDots(innerEdges, t)
+            this.calculatedDots.push(rCalcedDots);
+            innerCalcDots(rCalcedDots, t)
         };
 
-        const ret = [];
+        const blendedDots = [];
         for (let i = 1; i < this.dots.length; i += 1) {
             const movingDot = blend(this.dots[i - 1].x, this.dots[i].x, this.dots[i - 1].y, this.dots[i].y, t)
-            ret.push({
+            blendedDots.push({
                 x: movingDot.x,
                 y: movingDot.y,
             });
-
-            this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-            drawGrid(this.ctx);
-            drawMovings(this.ctx, this.dots);
-            drawMovings(this.ctx, ret);
         }
-        innerCalcDots(ret, t);
+
+        this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        drawGrid(this.ctx);
+        drawMovings(this.ctx, this.dots);
+        drawMovings(this.ctx, blendedDots);
+
+        innerCalcDots(blendedDots, t);
     }
 
     stopAnimate = () => {
-        console.log('stop executed')
         if (this.isPlay) {
+            this.time = Date.now() - this.startTime;
             cancelAnimationFrame(this.raf);
             this.isPlay = true;
         }
-        if (!this.isPlay) {
-            requestAnimationFrame(this.animate)
-        }
+        // if (!this.isPlay) {
+        //     requestAnimationFrame(this.animate)
+        // }
     }
 }
 

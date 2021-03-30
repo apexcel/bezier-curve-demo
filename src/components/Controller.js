@@ -7,21 +7,25 @@ const Controller = (board) => {
         height: '100px',
         className: 'controller'
     })
-    const run = createElement('button', {
+    const run = createElement('div', {
         id: 'run',
+        className: ['wrapper', 'btn'],
         innerText: 'RUN'
     });
-    const stop = createElement('button', {
+    const stop = createElement('div', {
         id: 'stop',
+        className: ['wrapper', 'btn'],
         innerText: 'STOP'
     });
-    const reset = createElement('button', {
+    const reset = createElement('div', {
         id: 'rest',
+        className: ['wrapper', 'btn'],
         innerText: 'RESET'
     });
     const adjustTime = createElement('input', {
         type: 'range',
         id: 'range-bar',
+        className: 'range',
         min: 1000,
         max: 10000,
     });

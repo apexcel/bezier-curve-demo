@@ -28,10 +28,11 @@ body {
     display: flex;
     top: 0;
     left: 0;
-    margin: 25px;
-    padding: 25px;
+    margin: 26px;
+    padding: 26px;
     height: 100px;
     background-color: #dfdfdf56;
+    border-radius: 4px;
 }
 
 .wrapper {
@@ -39,12 +40,23 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: #ffffff;
     height: 46px;
-    padding: 8px;
+    background-color: #ffffff;
+    border-radius: 4px;
+    margin: 4px;
+    padding: 10px 20px;
+    transition: all ease 0.8s;
 }
 
-button {
+.wrapper:hover {
+    opacity: 0.7;
+}
+
+.range {
+    cursor: pointer;
+}
+
+.btn {
+    cursor: pointer;
     width: 60px;
-    
 }
