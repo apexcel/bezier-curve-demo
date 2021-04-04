@@ -12,11 +12,6 @@ const Controller = (board) => {
         className: ['wrapper', 'btn'],
         innerText: 'RUN'
     });
-    const stop = createElement('div', {
-        id: 'stop',
-        className: ['wrapper', 'btn'],
-        innerText: 'STOP'
-    });
     const reset = createElement('div', {
         id: 'rest',
         className: ['wrapper', 'btn'],
@@ -38,12 +33,10 @@ const Controller = (board) => {
     });
 
     run.onclick = () => board.runAnimate();
-    stop.onclick = () => board.stopAnimate();
-    reset.onclick = () => board.resetGrid();
+    reset.onclick = () => board.reset();
     adjustTime.onchange = (e) => board.onChangeTime(e);
 
     controller.appendChild(run);
-    controller.appendChild(stop);
     controller.appendChild(reset);
     wrapper.appendChild(label);
     wrapper.appendChild(adjustTime);

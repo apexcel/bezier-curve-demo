@@ -3,8 +3,6 @@ import { createElement, getMousePosition, blend } from "../utils.js";
 
 const WIDTH = document.documentElement.clientWidth,
     HEIGHT = document.documentElement.clientHeight;
-let MOVE_TIME = 1500;
-
 class Board {
     constructor(parent) {
         this.canvas = createElement('canvas', {
@@ -20,35 +18,44 @@ class Board {
         this.canvas.style.height = HEIGHT;
         this.canvas.width = WIDTH;
         this.canvas.height = HEIGHT;
-        this.dots = []; // 만든 점들의 좌표가 저장되는 배열
-        this.selected = -1;
         this.canvas.addEventListener('dblclick', this.markCurrentPosition);
         this.canvas.addEventListener('mousedown', this.onMouseDown);
         this.canvas.addEventListener('mousemove', this.onMouseMove);
         this.canvas.addEventListener('mouseout', this.onMouseOut);
         this.canvas.addEventListener('mouseup', this.onMouseUp);
-        this.resetGrid();
+        this.reset();
     }
 
-    resetGrid = () => {
-        this.dots = [];
+    reset = () => {
+        this.state = {
+            selected: -1,
+            interpolation: 0,
+            coords: [],
+        };
+        this.animationState = {
+            startTime: Date.now(),
+            pauseTime: 0,
+            animateTime: 1500,
+            run: false,
+            pause: false
+        };
         this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
-        this.stopAnimate();
-        drawGrid(this.ctx, this.dots);
+        drawGrid(this.ctx, this.state.coords);
     }
 
     markCurrentPosition = (ev) => {
         const coordinates = getMousePosition(this.canvas, ev);
         this.probeDotList(coordinates.x, coordinates.y);
-        if (this.selected >= 0) {
-            this.dots = this.dots.filter((_, i) => i !== this.selected);
+        if (this.state.selected >= 0) {
+            this.state.coords = this.state.coords.filter((_, i) => i !== this.state.selected);
             this.selected = -1;
         }
         else {
-            this.dots.push(coordinates);
+            this.state.coords.push(coordinates);
         }
-        this.calculateBezier(this.time / MOVE_TIME)
-        // drawDotsAndEdges(this.ctx, this.dots);
+        (!this.animationState.run && !this.animationState.pause) 
+            ? drawDotsAndEdges(this.ctx, this.state.coords)
+            : this.calculateBezier(this.state.interpolation / this.animationState.animateTime);
     }
 
     onMouseDown = (ev) => {
@@ -57,38 +64,37 @@ class Board {
         this.probeDotList(x, y);
     }
 
-    // TODO: 정지된 상태에서 각 정점을 움직일 때 bezier 곡선들도 같이 움직이게 하기
     onMouseMove = (ev) => {
         ev.preventDefault();
-        // 선택된 정점이 없을 경우 리턴
-        if (this.selected < 0) return;
+        if (this.state.selected < 0) return;
+        this.state.coords[this.state.selected].x = ev.offsetX;
+        this.state.coords[this.state.selected].y = ev.offsetY;
 
-        this.dots[this.selected].x = ev.offsetX;
-        this.dots[this.selected].y = ev.offsetY;
-        // drawDotsAndEdges(this.ctx, this.dots);
-        this.calculateBezier(this.time / MOVE_TIME)
+        (!this.animationState.run && !this.animationState.pause)
+            ? drawDotsAndEdges(this.ctx, this.state.coords)
+            : this.calculateBezier(this.state.interpolation / this.animationState.animateTime);
     }
 
     onMouseOut = (ev) => {
-        this.selected = -1;
+        this.state.selected = -1;
     }
 
     onMouseUp = (ev) => {
-        this.selected = -1;
+        this.state.selected = -1;
     }
 
     onChangeTime = (ev) => {
-        MOVE_TIME = parseInt(ev.target.value, 10);
+        this.animationState.animateTime = parseInt(ev.target.value, 10);
     }
 
-    isExist = (dot, x, y) => {
+    isExist = (coords, x, y) => {
         const radius = 10;
-        const xpb = dot.x + radius;
-        const xnb = dot.x - radius;
-        const ypb = dot.y + radius;
-        const ynb = dot.y - radius;
-        if (dot.x >= -1 && dot.y >= -1
-            && dot.x <= WIDTH && dot.y <= HEIGHT
+        const xpb = coords.x + radius;
+        const xnb = coords.x - radius;
+        const ypb = coords.y + radius;
+        const ynb = coords.y - radius;
+        if (coords.x >= -1 && coords.y >= -1
+            && coords.x <= WIDTH && coords.y <= HEIGHT
             && (x <= xpb && x >= xnb && y >= ynb && y <= ypb)) {
             return true;
         }
@@ -96,43 +102,63 @@ class Board {
     }
 
     probeDotList = (x, y) => {
-        for (let i = 0; i < this.dots.length; i += 1) {
-            const currentDot = this.dots[i];
-            if (this.isExist(currentDot, x, y)) {
-                this.selected = i;
+        for (let i = 0; i < this.state.coords.length; i += 1) {
+            const pos = this.state.coords[i];
+            if (this.isExist(pos, x, y)) {
+                this.state.selected = i;
                 return;
             }
         }
     }
 
     runAnimate = () => {
-        this.startTime = Date.now();
-        this.isPlay = true;
-        this.animate();
-        console.log(this.calculatedDots)
+        if (!this.animationState.run && !this.animationState.pause) {
+            this.animationState.startTime = Date.now();
+            this.animationState.run = true;
+            this.animationState.pause = false;
+            this.animate();
+            this.updateText(true);
+            return;
+        }
+        if (this.animationState.run && !this.animationState.pause) {
+            cancelAnimationFrame(this.raf);
+            this.animationState.pauseTime = Date.now() - this.animationState.startTime;
+            this.animationState.pause = true;
+            this.updateText(false);
+            return;
+        }
+        if (this.animationState.run && this.animationState.pause) {
+            this.animationState.startTime = Date.now() - this.animationState.pauseTime;
+            this.raf = requestAnimationFrame(this.animate);
+            this.animationState.pause = false;
+            this.updateText(true);
+            return
+        }
     }
 
     animate = () => {
         const currentTime = Date.now();
         this.raf = requestAnimationFrame(this.animate)
-
-        this.calculateBezier((currentTime - this.startTime) / MOVE_TIME);
-        if (currentTime - this.startTime > MOVE_TIME) {
+        this.calculateBezier((currentTime - this.animationState.startTime) / this.animationState.animateTime);
+        if (currentTime - this.animationState.startTime > this.animationState.animateTime) {
             this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
             drawGrid(this.ctx);
-            drawDotsAndEdges(this.ctx, this.dots);
+            drawDotsAndEdges(this.ctx, this.state.coords);
             cancelAnimationFrame(this.raf);
+            this.animationState.run = false;
+            this.updateText(false);
         }
+        this.state.interpolation = Date.now() - this.animationState.startTime;
     }
 
     calculateBezier = (t) => {
         this.calculatedDots = [];
-        
-        const innerCalcDots = (dots, t) => {
-            if (dots.length < 2) return;
+
+        const innerCalcDots = (coords, t) => {
+            if (coords.length < 2) return;
             const rCalcedDots = [];
-            for (let i = 1; i < dots.length; i += 1) {
-                const movingDot = blend(dots[i - 1].x, dots[i].x, dots[i - 1].y, dots[i].y, t)
+            for (let i = 1; i < coords.length; i += 1) {
+                const movingDot = blend(coords[i - 1].x, coords[i].x, coords[i - 1].y, coords[i].y, t)
                 rCalcedDots.push({
                     x: movingDot.x,
                     y: movingDot.y,
@@ -144,8 +170,8 @@ class Board {
         };
 
         const blendedDots = [];
-        for (let i = 1; i < this.dots.length; i += 1) {
-            const movingDot = blend(this.dots[i - 1].x, this.dots[i].x, this.dots[i - 1].y, this.dots[i].y, t)
+        for (let i = 1; i < this.state.coords.length; i += 1) {
+            const movingDot = blend(this.state.coords[i - 1].x, this.state.coords[i].x, this.state.coords[i - 1].y, this.state.coords[i].y, t)
             blendedDots.push({
                 x: movingDot.x,
                 y: movingDot.y,
@@ -154,21 +180,15 @@ class Board {
 
         this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
         drawGrid(this.ctx);
-        drawMovings(this.ctx, this.dots);
+        drawMovings(this.ctx, this.state.coords);
         drawMovings(this.ctx, blendedDots);
 
         innerCalcDots(blendedDots, t);
     }
 
-    stopAnimate = () => {
-        if (this.isPlay) {
-            this.time = Date.now() - this.startTime;
-            cancelAnimationFrame(this.raf);
-            this.isPlay = true;
-        }
-        // if (!this.isPlay) {
-        //     requestAnimationFrame(this.animate)
-        // }
+    updateText = (run) => {
+        const target = document.getElementById('run');
+        target.innerText = (run) ? 'PAUSE' : 'RUN';
     }
 }
 
