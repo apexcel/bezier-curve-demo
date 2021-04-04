@@ -3,6 +3,16 @@ import { createElement, getMousePosition, blend } from "../utils.js";
 
 const WIDTH = document.documentElement.clientWidth,
     HEIGHT = document.documentElement.clientHeight;
+
+const COLORS = [
+    '#3f51b5',
+    '#673ab7',
+    '#e91e63',
+    '#8bc34a',
+    '#ffeb3b',
+    '#ff5722',
+    '#795548'
+];
 class Board {
     constructor(parent) {
         this.canvas = createElement('canvas', {
@@ -24,6 +34,7 @@ class Board {
         this.canvas.addEventListener('mouseout', this.onMouseOut);
         this.canvas.addEventListener('mouseup', this.onMouseUp);
         this.reset();
+        this.count = 0;
     }
 
     reset = () => {
@@ -49,7 +60,7 @@ class Board {
         this.probeDotList(coordinates.x, coordinates.y);
         if (this.state.selected >= 0) {
             this.state.coords = this.state.coords.filter((_, i) => i !== this.state.selected);
-            this.selected = -1;
+            this.state.selected = -1;
         }
         else {
             this.state.coords.push(coordinates);
@@ -156,7 +167,7 @@ class Board {
 
         const calculatePosition = (coords, t) => {
             if (coords.length < 2) return;
-
+            const color = this.state.calculatedCoords.length % COLORS.length;
             const calced = [];
             for (let i = 1; i < coords.length; i += 1) {
                 const interpolationPos = blend(coords[i - 1].x, coords[i].x, coords[i - 1].y, coords[i].y, t)
@@ -164,12 +175,11 @@ class Board {
                     x: interpolationPos.x,
                     y: interpolationPos.y,
                 });
-                drawBezier(this.ctx, calced);
+                drawBezier(this.ctx, calced, {color1: COLORS[color] + '2c'});
             }
             this.state.calculatedCoords.push(calced);
             calculatePosition(calced, t);
         };
-
         clearCanvas(this.ctx);
         drawGrid(this.ctx);
         drawBezier(this.ctx, this.state.coords);
