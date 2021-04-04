@@ -13,6 +13,8 @@ const COLORS = [
     '#ff5722',
     '#795548'
 ];
+
+let SPEED = 1500;
 class Board {
     constructor(parent) {
         this.canvas = createElement('canvas', {
@@ -47,7 +49,7 @@ class Board {
             startTime: Date.now(),
             pauseTime: 0,
             reStartTime: 0,
-            animateTime: 1500,
+            animateTime: SPEED,
             run: false,
             pause: false
         };
@@ -96,7 +98,8 @@ class Board {
     }
 
     onChangeTime = (ev) => {
-        this.animationState.animateTime = parseInt(ev.target.value, 10);
+        SPEED = parseInt(ev.target.value, 10);
+        this.animationState.animateTime = SPEED;
     }
 
     isExist = (coords, x, y) => {
@@ -163,8 +166,6 @@ class Board {
     }
 
     calculateBezier = (t) => {
-        // this.state.calculatedCoords = [];
-
         const calculatePosition = (coords, t) => {
             if (coords.length < 2) return;
             const color = this.state.calculatedCoords.length % COLORS.length;
