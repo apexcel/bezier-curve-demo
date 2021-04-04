@@ -2,7 +2,7 @@ const drawGrid = (ctx) => {
     const { width, height } = ctx.canvas;
     const padding = 30;
     ctx.save();
-    ctx.strokeStyle = 'black';
+    ctx.strokeStyle = '#0000009c';
     ctx.lineWidth = 1;
     for (let y = 0; y < height; y += padding) {
         ctx.beginPath();
@@ -20,15 +20,15 @@ const drawGrid = (ctx) => {
 }
 
 const drawDot = (ctx, x, y, options) => {
-    const { color1, color2 } = options || {};
+    const { color1, color2, size } = options || {};
     ctx.save();
     ctx.beginPath();
     ctx.fillStyle = color1 ? color1 : '#3333332c';
-    ctx.arc(x, y, 12, 0, 360)
+    ctx.arc(x, y, size ? size : 12, 0, 360)
     ctx.fill();
     ctx.closePath();
     ctx.beginPath();
-    ctx.arc(x, y, 12, 0, 360)
+    ctx.arc(x, y, size ? size : 12, 0, 360)
     ctx.stroke();
     ctx.closePath();
     ctx.beginPath();
@@ -79,10 +79,10 @@ const drawDotsAndEdges = (ctx, dots) => {
 }
 
 const drawBezier = (ctx, dots, options) => {
-    const { color1 } = options || {};
+    const { color1, size } = options || {};
     let prevX, prevY;
     dots.forEach((dot, i) => {
-        drawDot(ctx, dot.x, dot.y, { color1: color1 });
+        drawDot(ctx, dot.x, dot.y, { color1: color1, size: size });
         if (i > 0) drawEdge(ctx, prevX, dot.x, prevY, dot.y);
         prevX = dot.x;
         prevY = dot.y;

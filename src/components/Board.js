@@ -176,7 +176,10 @@ class Board {
                     y: interpolationPos.y,
                 };
             }
-            drawBezier(this.ctx, calced, { color1: COLORS[color] + '2c' });
+            // if there is one element in array that means last point of Bezier curve.
+            calced.length === 1
+                ? drawBezier(this.ctx, calced, { color1: '#000000', size: 12 })
+                : drawBezier(this.ctx, calced, { color1: COLORS[color] + '2c', size: 8 });
             this.state.calculatedCoords = calced;
             calculatePosition(calced, t);
         };

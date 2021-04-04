@@ -26,11 +26,15 @@ const Controller = (board) => {
     });
     const label = createElement('label', {
         htmlFor:'range-bar',
-        innerText: 'TIME'
+        innerText: 'SPEED'
     });
     const wrapper = createElement('div', {
         className: 'wrapper'
     });
+    const manual = createElement('div', {
+        className: 'wrapper'
+    });
+    manual.innerText = 'Double click to create/remove a dot - click and drag to move a dot.';
 
     run.onclick = () => board.runAnimate();
     reset.onclick = () => board.reset();
@@ -41,6 +45,7 @@ const Controller = (board) => {
     wrapper.appendChild(label);
     wrapper.appendChild(adjustTime);
     controller.appendChild(wrapper);
+    controller.appendChild(manual)
 
     return controller;
 };
