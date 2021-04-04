@@ -65,7 +65,7 @@ class Board {
         else {
             this.state.coords.push(coordinates);
         }
-        (!this.animationState.run && !this.animationState.pause) 
+        (!this.animationState.run && !this.animationState.pause)
             ? drawDotsAndEdges(this.ctx, this.state.coords)
             : this.calculateBezier(this.animationState.reStartTime / this.animationState.animateTime);
     }
@@ -163,7 +163,7 @@ class Board {
     }
 
     calculateBezier = (t) => {
-        this.state.calculatedCoords = [];
+        // this.state.calculatedCoords = [];
 
         const calculatePosition = (coords, t) => {
             if (coords.length < 2) return;
@@ -171,18 +171,18 @@ class Board {
             const calced = [];
             for (let i = 1; i < coords.length; i += 1) {
                 const interpolationPos = blend(coords[i - 1].x, coords[i].x, coords[i - 1].y, coords[i].y, t)
-                calced.push({
+                calced[i - 1] ={
                     x: interpolationPos.x,
                     y: interpolationPos.y,
-                });
-                drawBezier(this.ctx, calced, {color1: COLORS[color] + '2c'});
+                };
             }
-            this.state.calculatedCoords.push(calced);
+            drawBezier(this.ctx, calced, { color1: COLORS[color] + '2c' });
+            this.state.calculatedCoords = calced;
             calculatePosition(calced, t);
         };
         clearCanvas(this.ctx);
         drawGrid(this.ctx);
-        drawBezier(this.ctx, this.state.coords);
+        drawDotsAndEdges(this.ctx, this.state.coords)
         calculatePosition(this.state.coords, t);
     }
 
