@@ -23,9 +23,13 @@ const drawDot = (ctx, x, y, options) => {
     const { color1, color2 } = options || {};
     ctx.save();
     ctx.beginPath();
-    ctx.fillStyle = color1 ? color1 : '#5895e68c';
+    ctx.fillStyle = color1 ? color1 : '#3333332c';
     ctx.arc(x, y, 12, 0, 360)
     ctx.fill();
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.arc(x, y, 12, 0, 360)
+    ctx.stroke();
     ctx.closePath();
     ctx.beginPath();
     ctx.fillStyle = color2 ? color2 : '#000000';
@@ -74,10 +78,11 @@ const drawDotsAndEdges = (ctx, dots) => {
     })
 }
 
-const drawBezier = (ctx, dots) => {
+const drawBezier = (ctx, dots, options) => {
+    const { color1 } = options || {};
     let prevX, prevY;
     dots.forEach((dot, i) => {
-        drawDot(ctx, dot.x, dot.y);
+        drawDot(ctx, dot.x, dot.y, { color1: color1 });
         if (i > 0) drawEdge(ctx, prevX, dot.x, prevY, dot.y);
         prevX = dot.x;
         prevY = dot.y;

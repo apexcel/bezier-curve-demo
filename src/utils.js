@@ -34,7 +34,6 @@ const getMousePosition = (canvas, ev) => {
     };
 };
 
-//TODO: 원리 이해하기
 // Linear Interpolation
 const blender = (p1, p2, t) => {
     if (t <= 0) return p1;
@@ -48,7 +47,6 @@ const blend = (x1, x2, y1, y2, t) => {
     return { x, y };
 };
 
-// TODO: 동작 방식 확인 하기
 const interpolate = (x1, x2, y1, y2, duration) => {
     return (update) => {
         const blendX = blender.bind(null, x1, x2);

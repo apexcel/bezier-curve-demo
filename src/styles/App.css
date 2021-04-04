@@ -9,10 +9,10 @@ body {
     margin: 0;
     padding: 0;
     background: #3a945d;
-    background-image: -webkit-radial-gradient(center, circle cover, #7c7b92 0%, #252233 100%);
-    background-image: -moz-radial-gradient(center, circle cover, #7c7b92 0%, #252233 100%);
-    background-image: -o-radial-gradient(center, circle cover, #7c7b92 0%, #252233 100%);
-    background-image: radial-gradient(center, circle cover, #7c7b92 0%, #252233 100%);
+    background-image: -webkit-radial-gradient(center, circle cover, #aaaaaa 0%, #414141 100%);
+    background-image: -moz-radial-gradient(center, circle cover, #aaaaaa 0%, #414141 100%);
+    background-image: -o-radial-gradient(center, circle cover, #aaaaaa 0%, #414141 100%);
+    background-image: radial-gradient(center, circle cover, #aaaaaa 0%, #414141 100%);
 }
 
 #root {
