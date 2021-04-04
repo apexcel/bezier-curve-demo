@@ -4,7 +4,6 @@ const drawGrid = (ctx) => {
     ctx.save();
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 1;
-
     for (let y = 0; y < height; y += padding) {
         ctx.beginPath();
         ctx.moveTo(0, y + padding);
@@ -65,7 +64,7 @@ const drawDashedEdge = (ctx, x1, x2, y1, y2, options) => {
 
 const drawDotsAndEdges = (ctx, dots) => {
     let prevX, prevY;
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    clearCanvas(ctx);
     drawGrid(ctx);
     dots.forEach((dot, i) => {
         drawDot(ctx, dot.x, dot.y);
@@ -75,7 +74,7 @@ const drawDotsAndEdges = (ctx, dots) => {
     })
 }
 
-const drawMovings = (ctx, dots) => {
+const drawBezier = (ctx, dots) => {
     let prevX, prevY;
     dots.forEach((dot, i) => {
         drawDot(ctx, dot.x, dot.y);
@@ -85,4 +84,6 @@ const drawMovings = (ctx, dots) => {
     })
 }
 
-export { drawDot, drawEdge, drawDotsAndEdges, drawMovings, drawGrid }
+const clearCanvas = (ctx) => ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+export { drawDot, drawEdge, clearCanvas, drawDotsAndEdges, drawBezier, drawGrid }

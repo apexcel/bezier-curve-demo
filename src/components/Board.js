@@ -1,4 +1,4 @@
-import { drawGrid, drawDotsAndEdges, drawMovings } from "../draw.js";
+import { drawGrid, drawDotsAndEdges, drawBezier, clearCanvas } from "../draw.js";
 import { createElement, getMousePosition, blend } from "../utils.js";
 
 const WIDTH = document.documentElement.clientWidth,
@@ -29,17 +29,18 @@ class Board {
     reset = () => {
         this.state = {
             selected: -1,
-            interpolation: 0,
             coords: [],
+            calculatedCoords: []
         };
         this.animationState = {
             startTime: Date.now(),
             pauseTime: 0,
+            reStartTime: 0,
             animateTime: 1500,
             run: false,
             pause: false
         };
-        this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
+        clearCanvas(this.ctx);
         drawGrid(this.ctx, this.state.coords);
     }
 
@@ -55,7 +56,7 @@ class Board {
         }
         (!this.animationState.run && !this.animationState.pause) 
             ? drawDotsAndEdges(this.ctx, this.state.coords)
-            : this.calculateBezier(this.state.interpolation / this.animationState.animateTime);
+            : this.calculateBezier(this.animationState.reStartTime / this.animationState.animateTime);
     }
 
     onMouseDown = (ev) => {
@@ -72,7 +73,7 @@ class Board {
 
         (!this.animationState.run && !this.animationState.pause)
             ? drawDotsAndEdges(this.ctx, this.state.coords)
-            : this.calculateBezier(this.state.interpolation / this.animationState.animateTime);
+            : this.calculateBezier(this.animationState.reStartTime / this.animationState.animateTime);
     }
 
     onMouseOut = (ev) => {
@@ -138,52 +139,41 @@ class Board {
 
     animate = () => {
         const currentTime = Date.now();
-        this.raf = requestAnimationFrame(this.animate)
+        this.raf = requestAnimationFrame(this.animate);
         this.calculateBezier((currentTime - this.animationState.startTime) / this.animationState.animateTime);
+
         if (currentTime - this.animationState.startTime > this.animationState.animateTime) {
-            this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-            drawGrid(this.ctx);
             drawDotsAndEdges(this.ctx, this.state.coords);
             cancelAnimationFrame(this.raf);
             this.animationState.run = false;
             this.updateText(false);
         }
-        this.state.interpolation = Date.now() - this.animationState.startTime;
+        this.animationState.reStartTime = Date.now() - this.animationState.startTime;
     }
 
     calculateBezier = (t) => {
-        this.calculatedDots = [];
+        this.state.calculatedCoords = [];
 
-        const innerCalcDots = (coords, t) => {
+        const calculatePosition = (coords, t) => {
             if (coords.length < 2) return;
-            const rCalcedDots = [];
+
+            const calced = [];
             for (let i = 1; i < coords.length; i += 1) {
-                const movingDot = blend(coords[i - 1].x, coords[i].x, coords[i - 1].y, coords[i].y, t)
-                rCalcedDots.push({
-                    x: movingDot.x,
-                    y: movingDot.y,
+                const interpolationPos = blend(coords[i - 1].x, coords[i].x, coords[i - 1].y, coords[i].y, t)
+                calced.push({
+                    x: interpolationPos.x,
+                    y: interpolationPos.y,
                 });
-                drawMovings(this.ctx, rCalcedDots);
+                drawBezier(this.ctx, calced);
             }
-            this.calculatedDots.push(rCalcedDots);
-            innerCalcDots(rCalcedDots, t)
+            this.state.calculatedCoords.push(calced);
+            calculatePosition(calced, t);
         };
 
-        const blendedDots = [];
-        for (let i = 1; i < this.state.coords.length; i += 1) {
-            const movingDot = blend(this.state.coords[i - 1].x, this.state.coords[i].x, this.state.coords[i - 1].y, this.state.coords[i].y, t)
-            blendedDots.push({
-                x: movingDot.x,
-                y: movingDot.y,
-            });
-        }
-
-        this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        clearCanvas(this.ctx);
         drawGrid(this.ctx);
-        drawMovings(this.ctx, this.state.coords);
-        drawMovings(this.ctx, blendedDots);
-
-        innerCalcDots(blendedDots, t);
+        drawBezier(this.ctx, this.state.coords);
+        calculatePosition(this.state.coords, t);
     }
 
     updateText = (run) => {
