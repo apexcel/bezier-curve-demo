@@ -17,6 +17,22 @@ const Controller = (board) => {
         className: ['wrapper', 'btn'],
         innerText: 'RESET'
     });
+
+    const traceWrapper = createElement('div', {
+        className: 'wrapper'
+    });
+    const traceLabel = createElement('label', {
+        htmlFor: 'trace',
+        innerText: 'SHOW TRACE'
+    });
+    const trace = createElement('input', {
+        type: 'checkbox',
+        id: 'trace',
+        className: 'btn',
+        checked: false,
+        defaultChecked: false
+    });
+
     const adjustTime = createElement('input', {
         type: 'range',
         id: 'range-bar',
@@ -24,13 +40,14 @@ const Controller = (board) => {
         min: 1000,
         max: 10000,
     });
-    const label = createElement('label', {
-        htmlFor:'range-bar',
+    const rangeLabel = createElement('label', {
+        htmlFor: 'range-bar',
         innerText: 'SPEED'
     });
     const wrapper = createElement('div', {
         className: 'wrapper'
     });
+
     const manual = createElement('div', {
         className: 'wrapper'
     });
@@ -39,13 +56,24 @@ const Controller = (board) => {
     run.onclick = () => board.runAnimate();
     reset.onclick = () => board.reset();
     adjustTime.onchange = (e) => board.onChangeTime(e);
+    trace.onchange = (e) => board.onChangeTrace(e);
 
+    // Play/Pause, Reset
     controller.appendChild(run);
     controller.appendChild(reset);
-    wrapper.appendChild(label);
+
+    // Range input
+    wrapper.appendChild(rangeLabel);
     wrapper.appendChild(adjustTime);
     controller.appendChild(wrapper);
-    controller.appendChild(manual)
+
+    // Trace check box
+    traceWrapper.appendChild(traceLabel);
+    traceWrapper.appendChild(trace);
+    controller.appendChild(traceWrapper);
+
+    // Manual
+    controller.appendChild(manual);
 
     return controller;
 };

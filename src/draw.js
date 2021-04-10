@@ -78,11 +78,20 @@ const drawDotsAndEdges = (ctx, dots) => {
     })
 }
 
+const drawTraces = (ctx, dots) => {
+    if (dots.length) {
+        for (let i = 0; i < dots.length; i += 1) {
+            const { x, y } = dots[i];
+            drawDot(ctx, x, y, { color2: '#62ccac', size: '0.5' })
+        }
+    }
+};
+
 const drawBezier = (ctx, dots, options) => {
-    const { color1, size } = options || {};
+    const { color1, color2, size } = options || {};
     let prevX, prevY;
     dots.forEach((dot, i) => {
-        drawDot(ctx, dot.x, dot.y, { color1: color1, size: size });
+        drawDot(ctx, dot.x, dot.y, { color1: color1, color2: color2, size: size });
         if (i > 0) drawEdge(ctx, prevX, dot.x, prevY, dot.y);
         prevX = dot.x;
         prevY = dot.y;
@@ -91,4 +100,4 @@ const drawBezier = (ctx, dots, options) => {
 
 const clearCanvas = (ctx) => ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-export { drawDot, drawEdge, clearCanvas, drawDotsAndEdges, drawBezier, drawGrid }
+export { drawDot, drawEdge, clearCanvas, drawDotsAndEdges, drawBezier, drawGrid, drawTraces }

@@ -1,4 +1,4 @@
-import { drawGrid, drawDotsAndEdges, drawBezier, clearCanvas } from "../draw.js";
+import { drawGrid, drawDotsAndEdges, drawBezier, clearCanvas, drawDot, drawTraces } from "../draw.js";
 import { createElement, getMousePosition, blend } from "../utils.js";
 
 const WIDTH = document.documentElement.clientWidth,
@@ -15,6 +15,8 @@ const COLORS = [
 ];
 
 let SPEED = 1500;
+let SHOW_TRACE = false;
+
 class Board {
     constructor(parent) {
         this.canvas = createElement('canvas', {
@@ -53,6 +55,7 @@ class Board {
             run: false,
             pause: false
         };
+        this.traces = [];
         clearCanvas(this.ctx);
         drawGrid(this.ctx, this.state.coords);
     }
@@ -102,6 +105,10 @@ class Board {
         this.animationState.animateTime = SPEED;
     }
 
+    onChangeTrace = (ev) => {
+        SHOW_TRACE = ev.target.checked;
+    }
+
     isExist = (coords, x, y) => {
         const radius = 10;
         const xpb = coords.x + radius;
@@ -131,6 +138,7 @@ class Board {
             this.animationState.startTime = Date.now();
             this.animationState.run = true;
             this.animationState.pause = false;
+            this.traces = [];
             this.animate();
             this.updateText(true);
             return;
@@ -161,6 +169,7 @@ class Board {
             cancelAnimationFrame(this.raf);
             this.animationState.run = false;
             this.updateText(false);
+            if (SHOW_TRACE) drawTraces(this.ctx, this.traces);
         }
         this.animationState.reStartTime = Date.now() - this.animationState.startTime;
     }
@@ -178,15 +187,22 @@ class Board {
                 };
             }
             // if there is one element in array that means last point of Bezier curve.
-            calced.length === 1
-                ? drawBezier(this.ctx, calced, { color1: '#000000', size: 12 })
-                : drawBezier(this.ctx, calced, { color1: COLORS[color] + '2c', size: 8 });
+            if (calced.length === 1) {
+                drawBezier(this.ctx, calced, { color1: '#000000', color2: '#ffffff', size: 12});
+                if (SHOW_TRACE && !this.animationState.pause) this.traces.push(...calced);
+            }
+            else {
+                drawBezier(this.ctx, calced, { color1: COLORS[color] + '2c', size: 8 });
+            }
+
             this.state.calculatedCoords = calced;
             calculatePosition(calced, t);
         };
         clearCanvas(this.ctx);
         drawGrid(this.ctx);
         drawDotsAndEdges(this.ctx, this.state.coords)
+
+        if (SHOW_TRACE) drawTraces(this.ctx, this.traces);
         calculatePosition(this.state.coords, t);
     }
 
