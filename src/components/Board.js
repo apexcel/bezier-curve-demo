@@ -56,6 +56,8 @@ class Board {
             pause: false
         };
         this.traces = [];
+        this.updateText(false);
+        cancelAnimationFrame(this.raf);
         clearCanvas(this.ctx);
         drawGrid(this.ctx, this.state.coords);
     }
@@ -189,7 +191,7 @@ class Board {
             // if there is one element in array that means last point of Bezier curve.
             if (calced.length === 1) {
                 drawBezier(this.ctx, calced, { color1: '#000000', color2: '#ffffff', size: 12});
-                if (SHOW_TRACE && !this.animationState.pause) this.traces.push(...calced);
+                if (SHOW_TRACE && !this.animationState.pause) this.traces.push(calced[0]);
             }
             else {
                 drawBezier(this.ctx, calced, { color1: COLORS[color] + '2c', size: 8 });
@@ -208,7 +210,7 @@ class Board {
 
     updateText = (run) => {
         const target = document.getElementById('run');
-        target.innerText = (run) ? 'PAUSE' : 'RUN';
+        if (target) target.innerText = (run) ? 'PAUSE' : 'RUN';
     }
 }
 

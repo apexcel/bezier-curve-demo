@@ -82,7 +82,12 @@ const drawTraces = (ctx, dots) => {
     if (dots.length) {
         for (let i = 0; i < dots.length; i += 1) {
             const { x, y } = dots[i];
-            drawDot(ctx, x, y, { color2: '#62ccac', size: '0.5' })
+            ctx.save();
+            ctx.beginPath();
+            ctx.fillStyle = '#62ccac';
+            ctx.arc(x, y, 1.5, 0, 360)
+            ctx.fill();
+            ctx.restore();
         }
     }
 };
