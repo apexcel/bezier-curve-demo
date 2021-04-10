@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "http-server -p 3000 -c-1",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d ."
   },
   "keywords": [],
   "author": "",
