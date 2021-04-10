@@ -189,7 +189,7 @@ class Board {
             // if there is one element in array that means last point of Bezier curve.
             if (calced.length === 1) {
                 drawBezier(this.ctx, calced, { color1: '#000000', color2: '#ffffff', size: 12});
-                if (SHOW_TRACE && !this.animationState.pause) this.traces.push(...calced);
+                if (SHOW_TRACE && !this.animationState.pause) this.traces.push(calced[0]);
             }
             else {
                 drawBezier(this.ctx, calced, { color1: COLORS[color] + '2c', size: 8 });
