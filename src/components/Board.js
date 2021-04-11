@@ -14,7 +14,7 @@ const COLORS = [
     '#795548'
 ];
 
-let SPEED = 1500;
+let SPEED = 2000; // Default 1500
 let SHOW_TRACE = false;
 
 class Board {
@@ -45,7 +45,7 @@ class Board {
         this.state = {
             selected: -1,
             coords: [],
-            calculatedCoords: []
+            color: 0
         };
         this.animationState = {
             startTime: Date.now(),
@@ -179,7 +179,7 @@ class Board {
     calculateBezier = (t) => {
         const calculatePosition = (coords, t) => {
             if (coords.length < 2) return;
-            const color = this.state.calculatedCoords.length % COLORS.length;
+            const color = this.state.color % COLORS.length;
             const calced = [];
             for (let i = 1; i < coords.length; i += 1) {
                 const interpolationPos = blend(coords[i - 1].x, coords[i].x, coords[i - 1].y, coords[i].y, t)
@@ -197,7 +197,7 @@ class Board {
                 drawBezier(this.ctx, calced, { color1: COLORS[color] + '2c', size: 8 });
             }
 
-            this.state.calculatedCoords = calced;
+            this.state.color = calced.length;
             calculatePosition(calced, t);
         };
         clearCanvas(this.ctx);
