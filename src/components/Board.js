@@ -1,4 +1,4 @@
-import { drawGrid, drawDotsAndEdges, drawBezier, clearCanvas, drawDot, drawTraces } from "../draw.js";
+import { drawGrid, drawDotsAndEdges, drawBezier, clearCanvas, drawTraces } from "../draw.js";
 import { createElement, getMousePosition, blend } from "../utils.js";
 
 const WIDTH = document.documentElement.clientWidth,
@@ -14,7 +14,7 @@ const COLORS = [
     '#795548'
 ];
 
-let SPEED = 2000; // Default 1500
+let SPEED = 1500; // Default 1500
 let SHOW_TRACE = false;
 
 class Board {

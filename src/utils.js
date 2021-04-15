@@ -52,27 +52,4 @@ const blend = (x1, x2, y1, y2, t) => {
     return { x, y };
 };
 
-const interpolate = (x1, x2, y1, y2, duration) => {
-    return (update) => {
-        const blendX = blender.bind(null, x1, x2);
-        const blendY = blender.bind(null, y1, y2);
-        let startTime = 0;
-
-        const step = (timestamp) => {
-            if (!startTime) {
-                startTime = timestamp;
-            }
-            const pastTime = timestamp - startTime;
-            let progress = pastTime / duration;
-
-            if (progress > 1) {
-                update(blendX(1), blendY(1));
-                return;
-            }
-            update(blendX(progress), blendY(progress));
-            requestAnimationFrame(step);
-        }
-        requestAnimationFrame(step);
-    }
-};
-export { createElement, attachStyleSheet, getMousePosition, blender, blend, interpolate };
+export { createElement, attachStyleSheet, getMousePosition, blender, blend };
