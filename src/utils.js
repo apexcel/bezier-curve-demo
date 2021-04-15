@@ -25,13 +25,18 @@ const attachStyleSheet = (url) => {
 };
 
 const getMousePosition = (canvas, ev) => {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    // When the sizes of window and canvas are different
+    // const rect = canvas.getBoundingClientRect();
+    // const scaleX = canvas.width / rect.width;
+    // const scaleY = canvas.height / rect.height;
+    // return {
+    //     x: (ev.offsetX - rect.left) * scaleX,
+    //     y: (ev.offsetY - rect.top) * scaleY
+    // };
     return {
-        x: (ev.offsetX - rect.left) * scaleX,
-        y: (ev.offsetY - rect.top) * scaleY
-    };
+        x: ev.offsetX,
+        y: ev.offsetY
+    }
 };
 
 // Linear Interpolation
