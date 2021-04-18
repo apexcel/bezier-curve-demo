@@ -183,14 +183,14 @@ class Board {
             const calced = [];
             for (let i = 1; i < coords.length; i += 1) {
                 const interpolationPos = blend(coords[i - 1].x, coords[i].x, coords[i - 1].y, coords[i].y, t)
-                calced[i - 1] ={
+                calced[i - 1] = {
                     x: interpolationPos.x,
                     y: interpolationPos.y,
                 };
             }
             // if there is one element in array that means last point of Bezier curve.
             if (calced.length === 1) {
-                drawBezier(this.ctx, calced, { color1: '#000000', color2: '#ffffff', size: 12});
+                drawBezier(this.ctx, calced, { color1: '#000000', color2: '#ffffff', size: 12 });
                 if (SHOW_TRACE && !this.animationState.pause) this.traces.push(calced[0]);
             }
             else {
