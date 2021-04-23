@@ -111,26 +111,20 @@ class Board {
         SHOW_TRACE = ev.target.checked;
     }
 
-    isExist = (coords, x, y) => {
+    isExist = (x, y, inputX, inputY) => {
         const radius = 10;
-        const xpb = coords.x + radius;
-        const xnb = coords.x - radius;
-        const ypb = coords.y + radius;
-        const ynb = coords.y - radius;
-        if (coords.x >= -1 && coords.y >= -1
-            && coords.x <= WIDTH && coords.y <= HEIGHT
-            && (x <= xpb && x >= xnb && y >= ynb && y <= ypb)) {
-            return true;
-        }
-        return false;
+        const xpb = x + radius;
+        const xnb = x - radius;
+        const ypb = y + radius;
+        const ynb = y - radius;
+        return (x >= -1 && y >= -1 && x <= WIDTH && y <= HEIGHT && (inputX <= xpb && inputX >= xnb && inputY >= ynb && inputY <= ypb));
     }
 
-    probeDotList = (x, y) => {
+    probeDotList = (inputX, inputY) => {
         for (let i = 0; i < this.state.coords.length; i += 1) {
-            const pos = this.state.coords[i];
-            if (this.isExist(pos, x, y)) {
-                this.state.selected = i;
-                return;
+            const { x, y } = this.state.coords[i];
+            if (this.isExist(x, y, inputX, inputY)) {
+                return this.state.selected = i;
             }
         }
     }
