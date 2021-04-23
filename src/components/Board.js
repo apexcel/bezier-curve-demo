@@ -63,14 +63,14 @@ class Board {
     }
 
     markCurrentPosition = (ev) => {
-        const coordinates = getMousePosition(this.canvas, ev);
-        this.probeDotList(coordinates.x, coordinates.y);
+        const { x, y } = getMousePosition(this.canvas, ev);
+        this.probeDotList(x, y);
         if (this.state.selected >= 0) {
             this.state.coords = this.state.coords.filter((_, i) => i !== this.state.selected);
             this.state.selected = -1;
         }
         else {
-            this.state.coords.push(coordinates);
+            this.state.coords.push({ x, y });
         }
         (!this.animationState.run && !this.animationState.pause)
             ? drawDotsAndEdges(this.ctx, this.state.coords)
@@ -137,9 +137,12 @@ class Board {
 
     runAnimate = () => {
         if (!this.animationState.run && !this.animationState.pause) {
-            this.animationState.startTime = Date.now();
-            this.animationState.run = true;
-            this.animationState.pause = false;
+            this.animationState = {
+                ...this.animationState,
+                startTime: Date.now(),
+                run: true,
+                pause: false
+            };
             this.traces = [];
             this.animate();
             this.updateText(true);
@@ -147,8 +150,11 @@ class Board {
         }
         if (this.animationState.run && !this.animationState.pause) {
             cancelAnimationFrame(this.raf);
-            this.animationState.pauseTime = Date.now() - this.animationState.startTime;
-            this.animationState.pause = true;
+            this.animationState = {
+                ...this.animationState,
+                pauseTime: Date.now() - this.animationState.startTime,
+                pause: true
+            };
             this.updateText(false);
             return;
         }
@@ -182,11 +188,8 @@ class Board {
             const color = this.state.color % COLORS.length;
             const calced = [];
             for (let i = 1; i < coords.length; i += 1) {
-                const interpolationPos = blend(coords[i - 1].x, coords[i].x, coords[i - 1].y, coords[i].y, t)
-                calced[i - 1] = {
-                    x: interpolationPos.x,
-                    y: interpolationPos.y,
-                };
+                const { x, y } = blend(coords[i - 1].x, coords[i].x, coords[i - 1].y, coords[i].y, t)
+                calced[i - 1] = { x, y };
             }
             // if there is one element in array that means last point of Bezier curve.
             if (calced.length === 1) {

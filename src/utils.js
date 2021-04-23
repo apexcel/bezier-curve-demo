@@ -15,15 +15,6 @@ const createElement = (elemType, options) => {
     return elem;
 };
 
-const attachStyleSheet = (url) => {
-    const css = createElement('link', {
-        rel: 'stylesheet',
-        type: 'text/css',
-        href: url
-    })
-    document.head.appendChild(css);
-};
-
 const getMousePosition = (canvas, ev) => {
     // When the sizes of window and canvas are different
     // const rect = canvas.getBoundingClientRect();
@@ -52,4 +43,4 @@ const blend = (x1, x2, y1, y2, t) => {
     return { x, y };
 };
 
-export { createElement, attachStyleSheet, getMousePosition, blender, blend };
+export { createElement, getMousePosition, blender, blend };
