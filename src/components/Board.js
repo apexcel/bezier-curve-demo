@@ -50,7 +50,7 @@ class Board {
         this.animationState = {
             startTime: Date.now(),
             pauseTime: 0,
-            reStartTime: 0,
+            resumeTime: 0,
             animateTime: SPEED,
             run: false,
             pause: false
@@ -74,7 +74,7 @@ class Board {
         }
         (!this.animationState.run && !this.animationState.pause)
             ? drawDotsAndEdges(this.ctx, this.state.coords)
-            : this.calculateBezier(this.animationState.reStartTime / this.animationState.animateTime);
+            : this.calculateBezier(this.animationState.resumeTime / this.animationState.animateTime);
     }
 
     onMouseDown = (ev) => {
@@ -91,7 +91,7 @@ class Board {
 
         (!this.animationState.run && !this.animationState.pause)
             ? drawDotsAndEdges(this.ctx, this.state.coords)
-            : this.calculateBezier(this.animationState.reStartTime / this.animationState.animateTime);
+            : this.calculateBezier(this.animationState.resumeTime / this.animationState.animateTime);
     }
 
     onMouseOut = (ev) => {
@@ -147,33 +147,39 @@ class Board {
             this.animationState = {
                 ...this.animationState,
                 pauseTime: Date.now() - this.animationState.startTime,
+                run: false,
                 pause: true
             };
             this.updateText(false);
             return;
         }
-        if (this.animationState.run && this.animationState.pause) {
-            this.animationState.startTime = Date.now() - this.animationState.pauseTime;
-            this.raf = requestAnimationFrame(this.animate);
-            this.animationState.pause = false;
+        if (!this.animationState.run && this.animationState.pause) {
+            this.animationState = {
+                ...this.animationState,
+                startTime: Date.now() - this.animationState.pauseTime,
+                run: true,
+                pause: false
+            };
             this.updateText(true);
-            return
+            this.raf = requestAnimationFrame(this.animate);
+            return;
         }
     }
 
     animate = () => {
         const currentTime = Date.now();
-        this.raf = requestAnimationFrame(this.animate);
         this.calculateBezier((currentTime - this.animationState.startTime) / this.animationState.animateTime);
 
         if (currentTime - this.animationState.startTime > this.animationState.animateTime) {
-            drawDotsAndEdges(this.ctx, this.state.coords);
             cancelAnimationFrame(this.raf);
+            drawDotsAndEdges(this.ctx, this.state.coords);
             this.animationState.run = false;
             this.updateText(false);
             if (SHOW_TRACE) drawTraces(this.ctx, this.traces);
+            return;
         }
-        this.animationState.reStartTime = Date.now() - this.animationState.startTime;
+        this.animationState.resumeTime = Date.now() - this.animationState.startTime;
+        this.raf = requestAnimationFrame(this.animate);
     }
 
     calculateBezier = (t) => {
