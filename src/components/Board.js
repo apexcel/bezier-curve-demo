@@ -1,4 +1,4 @@
-import { drawGrid, drawDotsAndEdges, drawBezier, clearCanvas, drawDot, drawTraces } from "../draw.js";
+import { drawGrid, drawDotsAndEdges, drawBezier, clearCanvas, drawTraces } from "../draw.js";
 import { createElement, getMousePosition, blend } from "../utils.js";
 
 const WIDTH = document.documentElement.clientWidth,
@@ -14,7 +14,7 @@ const COLORS = [
     '#795548'
 ];
 
-let SPEED = 2000; // Default 1500
+let SPEED = 1500; // Default 1500
 let SHOW_TRACE = false;
 
 class Board {
@@ -50,7 +50,7 @@ class Board {
         this.animationState = {
             startTime: Date.now(),
             pauseTime: 0,
-            reStartTime: 0,
+            resumeTime: 0,
             animateTime: SPEED,
             run: false,
             pause: false
@@ -63,18 +63,18 @@ class Board {
     }
 
     markCurrentPosition = (ev) => {
-        const coordinates = getMousePosition(this.canvas, ev);
-        this.probeDotList(coordinates.x, coordinates.y);
+        const { x, y } = getMousePosition(this.canvas, ev);
+        this.probeDotList(x, y);
         if (this.state.selected >= 0) {
             this.state.coords = this.state.coords.filter((_, i) => i !== this.state.selected);
             this.state.selected = -1;
         }
         else {
-            this.state.coords.push(coordinates);
+            this.state.coords.push({ x, y });
         }
         (!this.animationState.run && !this.animationState.pause)
             ? drawDotsAndEdges(this.ctx, this.state.coords)
-            : this.calculateBezier(this.animationState.reStartTime / this.animationState.animateTime);
+            : this.calculateBezier(this.animationState.resumeTime / this.animationState.animateTime);
     }
 
     onMouseDown = (ev) => {
@@ -91,7 +91,7 @@ class Board {
 
         (!this.animationState.run && !this.animationState.pause)
             ? drawDotsAndEdges(this.ctx, this.state.coords)
-            : this.calculateBezier(this.animationState.reStartTime / this.animationState.animateTime);
+            : this.calculateBezier(this.animationState.resumeTime / this.animationState.animateTime);
     }
 
     onMouseOut = (ev) => {
@@ -111,35 +111,32 @@ class Board {
         SHOW_TRACE = ev.target.checked;
     }
 
-    isExist = (coords, x, y) => {
+    isExist = (x, y, inputX, inputY) => {
         const radius = 10;
-        const xpb = coords.x + radius;
-        const xnb = coords.x - radius;
-        const ypb = coords.y + radius;
-        const ynb = coords.y - radius;
-        if (coords.x >= -1 && coords.y >= -1
-            && coords.x <= WIDTH && coords.y <= HEIGHT
-            && (x <= xpb && x >= xnb && y >= ynb && y <= ypb)) {
-            return true;
-        }
-        return false;
+        const xpb = x + radius;
+        const xnb = x - radius;
+        const ypb = y + radius;
+        const ynb = y - radius;
+        return (x >= -1 && y >= -1 && x <= WIDTH && y <= HEIGHT && (inputX <= xpb && inputX >= xnb && inputY >= ynb && inputY <= ypb));
     }
 
-    probeDotList = (x, y) => {
+    probeDotList = (inputX, inputY) => {
         for (let i = 0; i < this.state.coords.length; i += 1) {
-            const pos = this.state.coords[i];
-            if (this.isExist(pos, x, y)) {
-                this.state.selected = i;
-                return;
+            const { x, y } = this.state.coords[i];
+            if (this.isExist(x, y, inputX, inputY)) {
+                return this.state.selected = i;
             }
         }
     }
 
     runAnimate = () => {
         if (!this.animationState.run && !this.animationState.pause) {
-            this.animationState.startTime = Date.now();
-            this.animationState.run = true;
-            this.animationState.pause = false;
+            this.animationState = {
+                ...this.animationState,
+                startTime: Date.now(),
+                run: true,
+                pause: false
+            };
             this.traces = [];
             this.animate();
             this.updateText(true);
@@ -147,33 +144,42 @@ class Board {
         }
         if (this.animationState.run && !this.animationState.pause) {
             cancelAnimationFrame(this.raf);
-            this.animationState.pauseTime = Date.now() - this.animationState.startTime;
-            this.animationState.pause = true;
+            this.animationState = {
+                ...this.animationState,
+                pauseTime: Date.now() - this.animationState.startTime,
+                run: false,
+                pause: true
+            };
             this.updateText(false);
             return;
         }
-        if (this.animationState.run && this.animationState.pause) {
-            this.animationState.startTime = Date.now() - this.animationState.pauseTime;
-            this.raf = requestAnimationFrame(this.animate);
-            this.animationState.pause = false;
+        if (!this.animationState.run && this.animationState.pause) {
+            this.animationState = {
+                ...this.animationState,
+                startTime: Date.now() - this.animationState.pauseTime,
+                run: true,
+                pause: false
+            };
             this.updateText(true);
-            return
+            this.raf = requestAnimationFrame(this.animate);
+            return;
         }
     }
 
     animate = () => {
         const currentTime = Date.now();
-        this.raf = requestAnimationFrame(this.animate);
         this.calculateBezier((currentTime - this.animationState.startTime) / this.animationState.animateTime);
 
         if (currentTime - this.animationState.startTime > this.animationState.animateTime) {
-            drawDotsAndEdges(this.ctx, this.state.coords);
             cancelAnimationFrame(this.raf);
+            drawDotsAndEdges(this.ctx, this.state.coords);
             this.animationState.run = false;
             this.updateText(false);
             if (SHOW_TRACE) drawTraces(this.ctx, this.traces);
+            return;
         }
-        this.animationState.reStartTime = Date.now() - this.animationState.startTime;
+        this.animationState.resumeTime = Date.now() - this.animationState.startTime;
+        this.raf = requestAnimationFrame(this.animate);
     }
 
     calculateBezier = (t) => {
@@ -182,15 +188,12 @@ class Board {
             const color = this.state.color % COLORS.length;
             const calced = [];
             for (let i = 1; i < coords.length; i += 1) {
-                const interpolationPos = blend(coords[i - 1].x, coords[i].x, coords[i - 1].y, coords[i].y, t)
-                calced[i - 1] ={
-                    x: interpolationPos.x,
-                    y: interpolationPos.y,
-                };
+                const { x, y } = blend(coords[i - 1].x, coords[i].x, coords[i - 1].y, coords[i].y, t)
+                calced[i - 1] = { x, y };
             }
             // if there is one element in array that means last point of Bezier curve.
             if (calced.length === 1) {
-                drawBezier(this.ctx, calced, { color1: '#000000', color2: '#ffffff', size: 12});
+                drawBezier(this.ctx, calced, { color1: '#000000', color2: '#ffffff', size: 12 });
                 if (SHOW_TRACE && !this.animationState.pause) this.traces.push(calced[0]);
             }
             else {

@@ -15,23 +15,19 @@ const createElement = (elemType, options) => {
     return elem;
 };
 
-const attachStyleSheet = (url) => {
-    const css = createElement('link', {
-        rel: 'stylesheet',
-        type: 'text/css',
-        href: url
-    })
-    document.head.appendChild(css);
-};
-
 const getMousePosition = (canvas, ev) => {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    // When the sizes of window and canvas are different
+    // const rect = canvas.getBoundingClientRect();
+    // const scaleX = canvas.width / rect.width;
+    // const scaleY = canvas.height / rect.height;
+    // return {
+    //     x: (ev.offsetX - rect.left) * scaleX,
+    //     y: (ev.offsetY - rect.top) * scaleY
+    // };
     return {
-        x: (ev.offsetX - rect.left) * scaleX,
-        y: (ev.offsetY - rect.top) * scaleY
-    };
+        x: ev.offsetX,
+        y: ev.offsetY
+    }
 };
 
 // Linear Interpolation
@@ -47,27 +43,4 @@ const blend = (x1, x2, y1, y2, t) => {
     return { x, y };
 };
 
-const interpolate = (x1, x2, y1, y2, duration) => {
-    return (update) => {
-        const blendX = blender.bind(null, x1, x2);
-        const blendY = blender.bind(null, y1, y2);
-        let startTime = 0;
-
-        const step = (timestamp) => {
-            if (!startTime) {
-                startTime = timestamp;
-            }
-            const pastTime = timestamp - startTime;
-            let progress = pastTime / duration;
-
-            if (progress > 1) {
-                update(blendX(1), blendY(1));
-                return;
-            }
-            update(blendX(progress), blendY(progress));
-            requestAnimationFrame(step);
-        }
-        requestAnimationFrame(step);
-    }
-};
-export { createElement, attachStyleSheet, getMousePosition, blender, blend, interpolate };
+export { createElement, getMousePosition, blender, blend };
